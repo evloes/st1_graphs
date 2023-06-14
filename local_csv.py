@@ -785,7 +785,14 @@ if st.session_state['valid_flag']:
         col_left_expander.write('Unmatched data')
         with col_left_expander.expander("Expand data and statistics"):
             #Display unmatch df
-            st.dataframe(st.session_state['unmatched_df_com_cols'].head(100))
+            unmatched_df['STORE'] = unmatched_df['STORE'].round(0).astype(str).str[:-2]
+            unmatched_df['STORE'] = unmatched_df['STORE'].replace('n', np.nan)
+            unmatched_df['STORE_ZIP'] = unmatched_df['STORE_ZIP'].round(0).astype(str).str[:-2]
+            unmatched_df['STORE_ZIP'] = unmatched_df['STORE_ZIP'].replace('n', np.nan)
+            unmatched_df['NUM_SHOP'] = unmatched_df['NUM_SHOP'].round(0).astype(str).str[:-2]
+            unmatched_df['NUM_SHOP'] = unmatched_df['NUM_SHOP'].replace('n', np.nan)
+            st.dataframe(unmatched_df[commun_cols_u_c].head(100))
+            #st.dataframe(st.session_state['unmatched_df_com_cols'].head(100))
             #Display unmatch df NAs 
             st.write(f'Number of Nan values in Unmatched Dataset: ')
             na_unmt_df = pd.DataFrame(st.session_state['unmatched_df_com_cols'].isna().sum())
@@ -799,7 +806,14 @@ if st.session_state['valid_flag']:
         col_right_expander.write(f'Customer data')
         with col_right_expander.expander("Expand data and statistics"):
             #Display customer df
-            st.dataframe(st.session_state.customer_df_com_cols.head(100))
+            customer_df['STORE'] = customer_df['STORE'].round(0).astype(str).str[:-2]
+            customer_df['STORE'] = customer_df['STORE'].replace('n', np.nan)
+            customer_df['STORE_ZIP'] = customer_df['STORE_ZIP'].round(0).astype(str).str[:-2]
+            customer_df['STORE_ZIP'] = customer_df['STORE_ZIP'].replace('n', np.nan)
+            customer_df['NUM_SHOP'] = customer_df['NUM_SHOP'].round(0).astype(str).str[:-2]
+            customer_df['NUM_SHOP'] = customer_df['NUM_SHOP'].replace('n', np.nan)
+            st.dataframe(customer_df[commun_cols_u_c].head(100))
+            #st.dataframe(st.session_state.customer_df_com_cols.head(100))
             #Display unmatch df NAs 
             st.write(f'Number of Nan values in Customer Data: ')
             na_cust_df = pd.DataFrame(st.session_state.customer_df_com_cols.isna().sum())
@@ -815,7 +829,14 @@ if st.session_state['valid_flag']:
         col_left_expander.write('Unmatched data')
         with col_left_expander.expander("Expand data and statistics"):
             #Display unmatch df
-            st.dataframe(st.session_state['unmatched_df_com_cols'].head(100))
+            unmatched_df['STORE'] = unmatched_df['STORE'].round(0).astype(str).str[:-2]
+            unmatched_df['STORE'] = unmatched_df['STORE'].replace('n', np.nan)
+            unmatched_df['STORE_ZIP'] = unmatched_df['STORE_ZIP'].round(0).astype(str).str[:-2]
+            unmatched_df['STORE_ZIP'] = unmatched_df['STORE_ZIP'].replace('n', np.nan)
+            unmatched_df['NUM_SHOP'] = unmatched_df['NUM_SHOP'].round(0).astype(str).str[:-2]
+            unmatched_df['NUM_SHOP'] = unmatched_df['NUM_SHOP'].replace('n', np.nan)
+            st.dataframe(unmatched_df[commun_cols_u_c].head(100))
+            #st.dataframe(st.session_state['unmatched_df_com_cols'].head(100))
             #Display unmatch df NAs 
             st.write(f'Number of Nan values in Unmatched Dataset: ')
             na_unmt_df = pd.DataFrame(st.session_state['unmatched_df_com_cols'].isna().sum())
@@ -828,7 +849,14 @@ if st.session_state['valid_flag']:
         col_right_expander.write(f'Customer data')
         with col_right_expander.expander("Expand data and statistics"):
             #Display customer df
-            st.dataframe(st.session_state.customer_df_com_cols.head(100))
+            customer_df['STORE'] = customer_df['STORE'].round(0).astype(str).str[:-2]
+            customer_df['STORE'] = customer_df['STORE'].replace('n', np.nan)
+            customer_df['STORE_ZIP'] = customer_df['STORE_ZIP'].round(0).astype(str).str[:-2]
+            customer_df['STORE_ZIP'] = customer_df['STORE_ZIP'].replace('n', np.nan)
+            customer_df['NUM_SHOP'] = customer_df['NUM_SHOP'].round(0).astype(str).str[:-2]
+            customer_df['NUM_SHOP'] = customer_df['NUM_SHOP'].replace('n', np.nan)
+            st.dataframe(customer_df[commun_cols_u_c].head(100))
+            #st.dataframe(st.session_state.customer_df_com_cols.head(100))
             #Display unmatch df NAs 
             st.write(f'Number of Nan values in Customer Data: ')
             na_cust_df = pd.DataFrame(st.session_state.customer_df_com_cols.isna().sum())
