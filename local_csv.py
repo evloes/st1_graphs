@@ -835,7 +835,7 @@ if st.session_state['valid_flag']:
             #st.dataframe(st.session_state.customer_df_com_cols.head(100))
             #Display unmatch df NAs 
             st.write(f'Number of Nan values in Customer Data: ')
-            na_cust_df = pd.DataFramest.session_state.customer_df_view.isna().sum())
+            na_cust_df = pd.DataFramest.session_state.customer_df_view.isna().sum()
             na_cust_df = na_cust_df.rename(columns={0:'#NAs'})
             st.dataframe(na_cust_df)
         if len(na_cust_df[na_cust_df['#NAs']>0]) == 0:
