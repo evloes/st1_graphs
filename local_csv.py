@@ -43,7 +43,7 @@ position: fixed;left: 0;bottom: 0;width: 100%;background-color: white;color: bla
 }
 </style>
 <div class="footer">
-<p>(c) 2023 Zeta Global, Dev Version 1.4, GDSA</p>
+<p>(c) 2023 Zeta Global, Dev Version 1.5, GDSA</p>
 </div>
 """
 st.markdown(footer,unsafe_allow_html=True)
@@ -77,7 +77,7 @@ else:
     unmatched_file_valid_flag = False
     if unmatched_file is not None:
         # Check MIME type of the uploaded file
-        if  unmatched_file.name == "unmatched_data.csv":
+        if  unmatched_file.name == "unmatched_data-2.csv":
             unmatched_df = pd.read_csv(unmatched_file)
             unmatched_file_valid_flag = True
             st.sidebar.success('Success')
@@ -90,7 +90,7 @@ else:
     customer_file_valid_flag = False
     if customer_file is not None:
         # Check MIME type of the uploaded file
-        if  customer_file.name == "customer_data.csv":
+        if  customer_file.name == "customer_data-2.csv":
             customer_df = pd.read_csv(customer_file)
             customer_file_valid_flag = True
             st.sidebar.success('Success')
@@ -106,6 +106,15 @@ check_data = st.sidebar.button("""Check Data""", help = 'Show statistics of your
 # Persist  unm/cust data statistics
 if 'valid_flag' not in st.session_state:
     st.session_state.valid_flag = False
+
+if 'dc_valid_flag' not in st.session_state:
+    st.session_state.dc_valid_flag = False
+
+if 'match_button_flag' not in st.session_state:
+    st.session_state.match_button_flag = False
+
+if 'check_data_flag' not in st.session_state:
+    st.session_state.check_data_flag = False
 
 if 'unmatched_obj_cols' not in st.session_state:
     st.session_state.unmatched_obj_cols = ['']
@@ -123,13 +132,30 @@ if 'unmatched_df_view' not in st.session_state:
     st.session_state.unmatched_df_view = pd.DataFrame()
 if 'customer_df_view' not in st.session_state:
     st.session_state.customer_df_view = pd.DataFrame()
+    
+if 'join_df' not in st.session_state:
+    st.session_state.join_df = pd.DataFrame()
+if 'join2_df' not in st.session_state:
+    st.session_state.join2_df = pd.DataFrame()
 
-if check_data:
+if 'value_select_box_unmatched_load_main' not in st.session_state:
+    st.session_state.value_select_box_unmatched_load_main = ''
+if 'value_select_box_unmatched_load_11' not in st.session_state:
+    st.session_state.value_select_box_unmatched_load_11 = ''
+if 'value_select_box_unmatched_load_12' not in st.session_state:
+    st.session_state.value_select_box_unmatched_load_12 = '' 
+if 'value_selectbox_threshold' not in st.session_state:
+    st.session_state.value_selectbox_threshold   = ''
+
+
+
+
+if check_data or st.session_state.check_data_flag:
     if (unmatched_file_valid_flag == True) and (customer_file_valid_flag ==True):
 
         unmatched_df_view = unmatched_df.copy()
-        unmatched_df_view['STORE'] = unmatched_df_view['STORE'].round(0).astype(str).str[:-2]
-        unmatched_df_view['STORE'] = unmatched_df_view['STORE'].replace('n', np.nan)
+        #unmatched_df_view['STORE'] = unmatched_df_view['STORE'].round(0).astype(str).str[:-2]
+        #unmatched_df_view['STORE'] = unmatched_df_view['STORE'].replace('n', np.nan)
         unmatched_df_view['STORE_ZIP'] = unmatched_df_view['STORE_ZIP'].round(0).astype(str).str[:-2]
         unmatched_df_view['STORE_ZIP'] = unmatched_df_view['STORE_ZIP'].replace('n', np.nan)
         unmatched_df_view['NUM_SHOP'] = unmatched_df_view['NUM_SHOP'].round(0).astype(str).str[:-2]
@@ -137,8 +163,8 @@ if check_data:
         
 
         customer_df_view = customer_df.copy()
-        customer_df_view['STORE'] = customer_df_view['STORE'].round(0).astype(str).str[:-2]
-        customer_df_view['STORE'] = customer_df_view['STORE'].replace('n', np.nan)
+        #customer_df_view['STORE'] = customer_df_view['STORE'].round(0).astype(str).str[:-2]
+        #customer_df_view['STORE'] = customer_df_view['STORE'].replace('n', np.nan)
         customer_df_view['STORE_ZIP'] = customer_df_view['STORE_ZIP'].round(0).astype(str).str[:-2]
         customer_df_view['STORE_ZIP'] = customer_df_view['STORE_ZIP'].replace('n', np.nan)
         customer_df_view['NUM_SHOP'] = customer_df_view['NUM_SHOP'].round(0).astype(str).str[:-2]
@@ -155,8 +181,6 @@ if check_data:
 
         st.session_state.unmatched_df_view = unmatched_df_view[commun_cols_u_c]
         st.session_state.customer_df_view = customer_df_view[commun_cols_u_c]
-
-
 
 
     else:
@@ -180,10 +204,13 @@ if (unmatched_file_valid_flag == True) and (customer_file_valid_flag ==True):
         'Select column',
         options=st.session_state.unmatched_obj_cols, 
         help = 'Select main column to apply Match')
+    st.session_state.value_select_box_unmatched_load_main = select_box_unmatched_load_main
     
     ## Main Threshold
     selectbox_threshold = st.sidebar.selectbox('Threshold',
         chosen_tresholds, help='Select main field threshold to perfom match')
+    st.session_state.value_selectbox_threshold = selectbox_threshold
+
 
     # #Fixed threshold columns 
     st.sidebar.subheader('Run algorithm on')
@@ -192,12 +219,14 @@ if (unmatched_file_valid_flag == True) and (customer_file_valid_flag ==True):
         (st.session_state.unmatched_num_cols), 
         help = 'Run algorithm on extra column for 100% threshold if desired'
         , key = 11)
+    st.session_state.value_select_box_unmatched_load_11 = select_box_unmatched_load_11
 
     select_box_unmatched_load_12 = st.sidebar.selectbox(
         'Select extra column',
         (st.session_state.unmatched_num_cols), 
         help = 'Run algorithm on extra column for 100% threshold if desired'
         , key = 12)
+    st.session_state.value_select_box_unmatched_load_12 = select_box_unmatched_load_12
 
     
 
@@ -218,6 +247,7 @@ elif unmatched_file_valid_flag == True:
         'Select column',
         options=selectbox_mss, 
         help = 'Upload Customer Database and select columns to apply Match')
+    st.session_state.value_select_box_unmatched_load_main = select_box_unmatched_load_main
     
     selectbox_threshold = st.sidebar.selectbox('Threshold',
         chosen_tresholds, help='Select main field threshold to perfom match')
@@ -243,6 +273,7 @@ elif customer_file_valid_flag == True:
         'Select column',
         options=selectbox_mss, 
         help = 'Upload Unmatched Dataset and select columns to apply Match')
+    st.session_state.value_select_box_unmatched_load_main = select_box_unmatched_load_main
     
     selectbox_threshold = st.sidebar.selectbox('Threshold',
         chosen_tresholds, help='Select main field threshold to perfom match')
@@ -284,6 +315,9 @@ else:
 st.sidebar.title("Match Data")
 match_button = st.sidebar.button("""Apply Match""", help='Apply match to your data and show the results')
 
+st.sidebar.subheader('Match First Party with DC data')
+dc_enhance = st.sidebar.button("""Enhance your Matching with DC Signals""")
+
 st.sidebar.text(" ")
 
 # st.sidebar.title("Data Storage")
@@ -309,7 +343,7 @@ st.sidebar.text(" ")
 
 
 # Creating columns 1 and 2
-col1, col2 = st.columns([13, 2])
+col1, col2 = st.columns([13, 2]) #title y zeta image
 
 ## Zeta Logo
 #zeta_logo = Image.open('ZETA_BIG-99e027c9.webp') #white logo 
@@ -322,42 +356,169 @@ col1.title("Zeta Customer Matcher")
 
 
 # Creating columns 3 and 4
-col_space1, col_space2  =  st.columns([2,2])
+col_space1, col_space2  =  st.columns([2,2]) #format check completed
 
 # Creating columns 3 and 4
-col3, col4= st.columns([2, 2])
+col3, col4= st.columns([2, 2]) #check data unmatched y customer
 colna1, colna2 = st.columns([2,2]) # NA message if no NAs
 
 # Create col expand data
-col_left_expander, col_right_expander = st.columns(2)
+col_left_expander, col_right_expander = st.columns(2) # unmatched and customer table and nas per col
 
 # Creating columns 5 and 6
 
-col_threshold_left, col_threshold_rigt = st.columns([2,2])
+col_threshold_left, col_threshold_rigt = st.columns([2,2]) #titulo de "Optimal Threshold"
 
 # Creating columns 5 and 6
 
-col5, col6 = st.columns([2,2])
+col5, col6 = st.columns([2,2]) #elbow chart y venn diagram
 
-
+colp1t, colp2t = st.columns([2,2]) #para titulo "Data Mach Summary'"
 ## Summary pie charts
-colp1, colp2, colp3 = st.columns([2, 2, 2])
+colp1, colp2, colp3 = st.columns([2, 2, 2]) #pie charts 1st party data
 
 
 # Set num of column algorithm will compare, by default is 1
 col_compare_alg = 1
 
+col7t, col8t = st.columns([2,2])#new col para los title
+col7, col8 = st.columns([2, 2]) #store performance
+
+col9, col10 = st.columns([2, 2]) # table dc new mathes
+colp4, colp5, colp6 = st.columns([2, 2, 2]) # pie charts 1st party + dc matching 
+col11, col12 = st.columns([2, 2])
+
+
+
+
+if dc_enhance and st.session_state.valid_flag and st.session_state.match_button_flag and st.session_state.check_data_flag and unmatched_file_valid_flag and customer_file_valid_flag: 
+
+    join_file_valid_flag = False
+    join_df = pd.read_csv("prob_1.csv")
+    join_file_valid_flag = True
+
+    join2_file_valid_flag = False
+    join2_df = pd.read_csv("prob_2.csv")
+    join2_file_valid_flag = True
+
+
+    st.session_state.join_df = join_df
+    st.session_state.join2_df = join2_df
+
+    
+
+    col9.header('First Party and DC Dataset Matched Summary​')   
+
+    val_prob_1 =len(st.session_state.join_df[st.session_state.join_df.VALIDATED_MATCHES_TABLE == 1])  
+    no_val_prob_1 = len(st.session_state.join_df[st.session_state.join_df.VALIDATED_MATCHES_TABLE == 0])
+    val_prob_2 = len(st.session_state.join2_df[st.session_state.join2_df.VALIDATED_DC_TABLE == 1])
+    no_val_prob_2 = len(st.session_state.join2_df[st.session_state.join2_df.VALIDATED_DC_TABLE == 0 ])
+
+    scenario1 = len(st.session_state.join2_df[st.session_state.join2_df.scenario == '1'])
+    scenario2 = len(st.session_state.join2_df[st.session_state.join2_df.scenario == '2'])
+    scenario3 = len(st.session_state.join2_df[st.session_state.join2_df.scenario == '3'])
+    scenario4 = len(st.session_state.join2_df[st.session_state.join2_df.scenario == '4'])
+    scenarioother = len(st.session_state.join2_df[st.session_state.join2_df.scenario == '5_3'])
+    scenario0 = len(st.session_state.join2_df[st.session_state.join2_df.scenario.isnull()])
+
+    df_info_match = {'Number of matches':[val_prob_1, (val_prob_1 + val_prob_2) ] }
+                    #'Number of matches 1st + DC': [len(st.session_state['unmatched_df_com_cols'].columns), len(st.session_state.customer_df_com_cols.columns)]}
+    df_info_match = pd.DataFrame(df_info_match).transpose().rename(columns={0:'First Party Data', 1:'First Party + DC'}) 
+
+    col9.dataframe(df_info_match)  
+
+    # pie chart 1
+    y = np.array([no_val_prob_1, val_prob_1])
+    labels = ['Matches 1st Party Data', 'Validated Matches']
+    mycolors = [plot_blue_colour, primaryColor]
+    explode = (0, 0)
+    
+    #fig1, ax1 = plt.subplots()
+    fig1, ax1 = plt.subplots(figsize=(6,6))
+    fig1.patch.set_facecolor(backgroundColor)
+    
+    ax1.pie(y, autopct=lambda x: '{:.0f}'.format(x*y.sum()/100), explode=explode, labels=None,
+        shadow=False, startangle=90, colors=mycolors, textprops={'color':"w",'fontsize': 14} ) 
+    ax1.axis('equal')
+    plt.title('First Party Data', color=textColor, y=1.1, fontsize=16)
+    plt.legend(labels, loc='lower left', bbox_to_anchor=(0.5, -0.08))    
+
+    buf1 = BytesIO()
+    fig1.savefig(buf1, format="png")
+
+    y = np.array([no_val_prob_2, val_prob_2])
+    labels = ['Matches 1st + DC data', 'Validated DC Matches']
+    mycolors = [plot_blue_colour, primaryColor]
+    explode = (0, 0)
+    
+    #fig2, ax2 = plt.subplots()
+    fig2, ax2 = plt.subplots(figsize=(6,6))
+    fig2.patch.set_facecolor(backgroundColor)
+    
+    ax2.pie(y, autopct=lambda x: '{:.0f}'.format(x*y.sum()/100), explode=explode, labels=None,
+        shadow=False, startangle=90, colors=mycolors, textprops={'color':"w",'fontsize': 14}, radius=1800)
+    ax2.axis('equal')
+    plt.title('First Party + DC Data', color=textColor, y=1.1, fontsize=16)
+    plt.legend(labels, loc='lower left', bbox_to_anchor=(0.5, -0.08))
+    
+    buf2 = BytesIO()
+    fig2.savefig(buf2, format="png")
+
+    y = np.array([scenario1, scenario2, scenario3, scenario4, scenarioother,  scenario0])
+    labels = ['With Email', 'With extra email address', 'With Phone number', 'With Address and Email', 'Other enrichment', 'Non validated data']
+    mycolors = ['#845EC2', '#D65DB1', '#FF9671' , '#FFC75F', '#D9D74A', plot_blue_colour ]
+    explode = (0, 0, 0, 0, 0, 0)
+    
+    #fig3, ax3 = plt.subplots()
+    fig3, ax3 = plt.subplots(figsize=(6,6))
+    fig3.patch.set_facecolor(backgroundColor)
+    
+    ax3.pie(y, autopct=lambda x: '{:.0f}'.format(x*y.sum()/100), explode=explode, labels=None,
+        shadow=False, startangle=90, colors=mycolors, textprops={'color':"w",'fontsize': 14},  radius=1800)
+    ax3.axis('equal')
+    plt.title('Customer Data Enrichment', color=textColor, y=1.1, fontsize=16)
+    plt.legend(labels, loc='lower left', bbox_to_anchor=(0.5, -0.08))
+    #plt.figure(figsize=(10,10))
+
+    buf3 = BytesIO()
+    fig3.savefig(buf3, format="png")
+    
+    # Display dataset summary after Probabilistic Matching
+    colp4.image(buf1)
+    colp5.image(buf2)
+    colp6.image(buf3)
+
+    with colp4:
+        st.write('')
+    with colp5:
+        st.write('')
+    with colp6:
+        st.write('')
+
+        #st.header('Matched Summary Table​')
+
+    summ_prob2_tbl = st.session_state.join2_df[['UNMATCHED_NAME', 'CUSTOMER_NAME', 'UNMATCHED_CITY', 'CUSTOMER_CITY', 'UNMATCHED_STATE', 'CUSTOMER_STATE'
+                                                    , 'UNMATCHED_ZIPCODE', 'CUSTOMER_ZIPCODE', 'UNMATCHED_PHONE', 'CUSTOMER_PHONE', 'UNMATCHED_EMAIL'
+                                                    , 'CUSTOMER_EMAIL', 'NAME', 'CITY', 'STATE', 'ZIPCODE', 'EMAIL', 'PHONE']]
+
+
+    st.dataframe(data=summ_prob2_tbl.head(100), use_container_width=True)
+
+    
+
 
 # Display features if data is valid and match button is clicked
-if match_button and unmatched_file_valid_flag and customer_file_valid_flag:
-    if (select_box_unmatched_load_11 == select_box_unmatched_load_12 ) and ((select_box_unmatched_load_11 != '') or select_box_unmatched_load_12):
+if match_button and unmatched_file_valid_flag and customer_file_valid_flag or st.session_state.dc_valid_flag  or st.session_state.check_data_flag:
+    if (st.session_state.value_select_box_unmatched_load_11 == st.session_state.value_select_box_unmatched_load_12 ) and ((st.session_state.value_select_box_unmatched_load_11 != '') or st.session_state.value_select_box_unmatched_load_12):
         st.error('Please, select two different extra columns to perform match')
     else:
-        if select_box_unmatched_load_main and (select_box_unmatched_load_11 or select_box_unmatched_load_12):
+        if st.session_state.value_select_box_unmatched_load_main and (st.session_state.value_select_box_unmatched_load_11 or st.session_state.value_select_box_unmatched_load_12):
             col_compare_alg = 2 
-        if select_box_unmatched_load_main and select_box_unmatched_load_11 and select_box_unmatched_load_12:
+        if st.session_state.value_select_box_unmatched_load_main and st.session_state.value_select_box_unmatched_load_11 and st.session_state.value_select_box_unmatched_load_12:
             col_compare_alg = 3
         
+
+        st.session_state.match_button_flag = True
         # Bar progress
         latest_iteration = st.empty()
         bar = st.progress(0)
@@ -397,15 +558,15 @@ if match_button and unmatched_file_valid_flag and customer_file_valid_flag:
 
         ## REMOVE NaNs FROM SELECTED COLS TO JOIN ON
         try: # try to avoid error if select box left blank
-            unmatched_df = unmatched_df[unmatched_df[select_box_unmatched_load_main].notnull()]
+            unmatched_df = unmatched_df[unmatched_df[st.session_state.value_select_box_unmatched_load_main].notnull()]
         except:
             pass
         try:
-            unmatched_df = unmatched_df[unmatched_df[select_box_unmatched_load_11].notnull()]
+            unmatched_df = unmatched_df[unmatched_df[st.session_state.value_select_box_unmatched_load_11].notnull()]
         except:
             pass
         try:
-            unmatched_df = unmatched_df[unmatched_df[select_box_unmatched_load_12].notnull()]
+            unmatched_df = unmatched_df[unmatched_df[st.session_state.value_select_box_unmatched_load_12].notnull()]
         except:
             pass
           
@@ -420,7 +581,7 @@ if match_button and unmatched_file_valid_flag and customer_file_valid_flag:
 
         
         #FIRST RUN OF THE ALGORITHM FOR THE CHOSEN THRESHOLD
-        model_thld = float(selectbox_threshold)
+        model_thld = float(st.session_state.value_selectbox_threshold)
         vectors,predictions= Sorted_Neighbourhood_Prediction(unmatched_df,
                                                             customer_df,
                                                             pred_comp =col_compare_alg,
@@ -429,9 +590,9 @@ if match_button and unmatched_file_valid_flag and customer_file_valid_flag:
                                                             method_num="step",
                                                             scale=5,
                                                             offset=5,
-                                                            main_field_compare = select_box_unmatched_load_main,
-                                                            select_box_unmatched_load_11=select_box_unmatched_load_11,
-                                                            select_box_unmatched_load_12=select_box_unmatched_load_12)
+                                                            main_field_compare = st.session_state.value_select_box_unmatched_load_main,
+                                                            select_box_unmatched_load_11=st.session_state.value_select_box_unmatched_load_11,
+                                                            select_box_unmatched_load_12=st.session_state.value_select_box_unmatched_load_12)
         
         
         #latest_iteration = st.empty()
@@ -460,9 +621,9 @@ if match_button and unmatched_file_valid_flag and customer_file_valid_flag:
                                                                 method_num="step",
                                                                 scale=5,
                                                                 offset=5,
-                                                                main_field_compare = select_box_unmatched_load_main,
-                                                                select_box_unmatched_load_11=select_box_unmatched_load_11,
-                                                                select_box_unmatched_load_12=select_box_unmatched_load_12)
+                                                                main_field_compare = st.session_state.value_select_box_unmatched_load_main,
+                                                                select_box_unmatched_load_11=st.session_state.value_select_box_unmatched_load_11,
+                                                                select_box_unmatched_load_12=st.session_state.value_select_box_unmatched_load_12)
 
             #merge matching
             df_final_all_trhld = merge_dataframes(predictions, unmatched_df, customer_df)
@@ -489,55 +650,55 @@ if match_button and unmatched_file_valid_flag and customer_file_valid_flag:
         ## Example Fuzzy Logic output table 
         algrtm_output_df = df_final.copy()
         
-        if select_box_unmatched_load_main and select_box_unmatched_load_11 and select_box_unmatched_load_12:     
-            algrtm_output_df = algrtm_output_df[[f'{select_box_unmatched_load_main}_CUST', 
-                                                    f'{select_box_unmatched_load_main}_UNMTCH', 
-                                                    f'{select_box_unmatched_load_11}_CUST', 
-                                                    f'{select_box_unmatched_load_11}_UNMTCH',
-                                                    f'{select_box_unmatched_load_12}_CUST',  
-                                                    f'{select_box_unmatched_load_12}_UNMTCH']]
-            algrtm_output_df[f'{select_box_unmatched_load_11}_CUST'] = algrtm_output_df[f'{select_box_unmatched_load_11}_CUST'].round(0).astype(str).str[:-2]
-            algrtm_output_df[f'{select_box_unmatched_load_11}_CUST'] = algrtm_output_df[f'{select_box_unmatched_load_11}_CUST'].replace('n', np.nan)
-            algrtm_output_df[f'{select_box_unmatched_load_12}_CUST'] = algrtm_output_df[f'{select_box_unmatched_load_12}_CUST'].round(0).astype(str).str[:-2]
-            algrtm_output_df[f'{select_box_unmatched_load_12}_CUST'] = algrtm_output_df[f'{select_box_unmatched_load_12}_CUST'].replace('n', np.nan)
-            algrtm_output_df[f'{select_box_unmatched_load_11}_UNMTCH'] = algrtm_output_df[f'{select_box_unmatched_load_11}_UNMTCH'].round(0).astype(str).str[:-2]
-            algrtm_output_df[f'{select_box_unmatched_load_11}_UNMTCH'] = algrtm_output_df[f'{select_box_unmatched_load_11}_UNMTCH'].replace('n', np.nan)
-            algrtm_output_df[f'{select_box_unmatched_load_12}_UNMTCH'] = algrtm_output_df[f'{select_box_unmatched_load_12}_UNMTCH'].round(0).astype(str).str[:-2]
-            algrtm_output_df[f'{select_box_unmatched_load_12}_UNMTCH'] = algrtm_output_df[f'{select_box_unmatched_load_12}_UNMTCH'].replace('n', np.nan)                                          
+        if st.session_state.value_select_box_unmatched_load_main and st.session_state.value_select_box_unmatched_load_11 and st.session_state.value_select_box_unmatched_load_12:     
+            algrtm_output_df = algrtm_output_df[[f'{st.session_state.value_select_box_unmatched_load_main}_CUST', 
+                                                    f'{st.session_state.value_select_box_unmatched_load_main}_UNMTCH', 
+                                                    f'{st.session_state.value_select_box_unmatched_load_11}_CUST', 
+                                                    f'{st.session_state.value_select_box_unmatched_load_11}_UNMTCH',
+                                                    f'{st.session_state.value_select_box_unmatched_load_12}_CUST',  
+                                                    f'{st.session_state.value_select_box_unmatched_load_12}_UNMTCH']]
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_CUST'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_CUST'].round(0).astype(str).str[:-2]
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_CUST'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_CUST'].replace('n', np.nan)
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_CUST'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_CUST'].round(0).astype(str).str[:-2]
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_CUST'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_CUST'].replace('n', np.nan)
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_UNMTCH'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_UNMTCH'].round(0).astype(str).str[:-2]
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_UNMTCH'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_UNMTCH'].replace('n', np.nan)
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_UNMTCH'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_UNMTCH'].round(0).astype(str).str[:-2]
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_UNMTCH'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_UNMTCH'].replace('n', np.nan)                                          
 
-        elif select_box_unmatched_load_main and select_box_unmatched_load_11:
-            algrtm_output_df = algrtm_output_df[[f'{select_box_unmatched_load_main}_CUST', 
-                                                    f'{select_box_unmatched_load_main}_UNMTCH', 
-                                                    f'{select_box_unmatched_load_11}_CUST', 
-                                                    f'{select_box_unmatched_load_11}_UNMTCH']]
+        elif st.session_state.value_select_box_unmatched_load_main and st.session_state.value_select_box_unmatched_load_11:
+            algrtm_output_df = algrtm_output_df[[f'{st.session_state.value_select_box_unmatched_load_main}_CUST', 
+                                                    f'{st.session_state.value_select_box_unmatched_load_main}_UNMTCH', 
+                                                    f'{st.session_state.value_select_box_unmatched_load_11}_CUST', 
+                                                    f'{st.session_state.value_select_box_unmatched_load_11}_UNMTCH']]
 
-            algrtm_output_df[f'{select_box_unmatched_load_11}_CUST'] = algrtm_output_df[f'{select_box_unmatched_load_11}_CUST'].round(0).astype(str).str[:-2]
-            algrtm_output_df[f'{select_box_unmatched_load_11}_CUST'] = algrtm_output_df[f'{select_box_unmatched_load_11}_CUST'].replace('n', np.nan)
-            algrtm_output_df[f'{select_box_unmatched_load_11}_UNMTCH'] = algrtm_output_df[f'{select_box_unmatched_load_11}_UNMTCH'].round(0).astype(str).str[:-2]
-            algrtm_output_df[f'{select_box_unmatched_load_11}_UNMTCH'] = algrtm_output_df[f'{select_box_unmatched_load_11}_UNMTCH'].replace('n', np.nan)
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_CUST'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_CUST'].round(0).astype(str).str[:-2]
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_CUST'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_CUST'].replace('n', np.nan)
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_UNMTCH'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_UNMTCH'].round(0).astype(str).str[:-2]
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_UNMTCH'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_11}_UNMTCH'].replace('n', np.nan)
 
-        elif select_box_unmatched_load_main and select_box_unmatched_load_12:
-            algrtm_output_df = algrtm_output_df[[f'{select_box_unmatched_load_main}_CUST', 
-                                                    f'{select_box_unmatched_load_main}_UNMTCH', 
-                                                    f'{select_box_unmatched_load_12}_CUST', 
-                                                    f'{select_box_unmatched_load_12}_UNMTCH']]
+        elif st.session_state.value_select_box_unmatched_load_main and st.session_state.value_select_box_unmatched_load_12:
+            algrtm_output_df = algrtm_output_df[[f'{st.session_state.value_select_box_unmatched_load_main}_CUST', 
+                                                    f'{st.session_state.value_select_box_unmatched_load_main}_UNMTCH', 
+                                                    f'{st.session_state.value_select_box_unmatched_load_12}_CUST', 
+                                                    f'{st.session_state.value_select_box_unmatched_load_12}_UNMTCH']]
             
-            algrtm_output_df[f'{select_box_unmatched_load_12}_CUST'] = algrtm_output_df[f'{select_box_unmatched_load_12}_CUST'].round(0).astype(str).str[:-2]
-            algrtm_output_df[f'{select_box_unmatched_load_12}_CUST'] = algrtm_output_df[f'{select_box_unmatched_load_12}_CUST'].replace('n', np.nan)
-            algrtm_output_df[f'{select_box_unmatched_load_12}_UNMTCH'] = algrtm_output_df[f'{select_box_unmatched_load_12}_UNMTCH'].round(0).astype(str).str[:-2]
-            algrtm_output_df[f'{select_box_unmatched_load_12}_UNMTCH'] = algrtm_output_df[f'{select_box_unmatched_load_12}_UNMTCH'].replace('n', np.nan)
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_CUST'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_CUST'].round(0).astype(str).str[:-2]
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_CUST'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_CUST'].replace('n', np.nan)
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_UNMTCH'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_UNMTCH'].round(0).astype(str).str[:-2]
+            algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_UNMTCH'] = algrtm_output_df[f'{st.session_state.value_select_box_unmatched_load_12}_UNMTCH'].replace('n', np.nan)
 
-        elif select_box_unmatched_load_main:
-            algrtm_output_df = algrtm_output_df[[f'{select_box_unmatched_load_main}_CUST', 
-                                                    f'{select_box_unmatched_load_main}_UNMTCH']]
+        elif st.session_state.value_select_box_unmatched_load_main:
+            algrtm_output_df = algrtm_output_df[[f'{st.session_state.value_select_box_unmatched_load_main}_CUST', 
+                                                    f'{st.session_state.value_select_box_unmatched_load_main}_UNMTCH']]
 
         
-        df_copy, df_gb_store_mtch= df_store_match (df_final,select_box_unmatched_load_main)
+        df_copy, df_gb_store_mtch= df_store_match (df_final,st.session_state.value_select_box_unmatched_load_main)
         
 
 
         # Col 3 text
-        col_threshold_left.header(f'Perform Matching at Threshold: {selectbox_threshold}')
+        col_threshold_left.header(f'Perform Matching at Threshold: {st.session_state.value_selectbox_threshold}')
         col_threshold_left.markdown(f'Optimal Threshold= {best_threshold} (based on number of matches vs quality)')
         col5.subheader(' ')
 
@@ -582,7 +743,7 @@ if match_button and unmatched_file_valid_flag and customer_file_valid_flag:
         latest_iteration.empty()
 
         # Display dataset summary after Probabilistic Matching
-        st.subheader('Dataset Matched Summary​')
+        colp1t.subheader('Dataset Matched Summary​')
 
 
         # /....
@@ -591,57 +752,9 @@ if match_button and unmatched_file_valid_flag and customer_file_valid_flag:
         ctomer_name_col = st.session_state.customer_df_com_cols.MSRNAME
 
         ## Summary pie charts
-        colp1, colp2, colp3 = st.columns([2, 2, 2])
+        #colp1, colp2, colp3 = st.columns([2, 2, 2])
 
-        buf1, buf2, buf3 = mini_pie_charts(df_final, select_box_unmatched_load_main, unmtch_name_col, ctomer_name_col )
-
-        #y = np.array([unmtch_name_col.nunique(), len(unmtch_name_col) - unmtch_name_col.nunique()])
-        #customer_matches = pd.DataFrame({"labels" : ['Only one match','More than one match'],"values":[len(df_final[f'{select_box_unmatched_load_main}_MTCH'].unique()), len(df_final)- len(df_final[f'{select_box_unmatched_load_main}_MTCH'].unique()) ]})
-        # y1= np.array([len(df_final[f'{select_box_unmatched_load_main}_MTCH'].unique()), len(df_final)- len(df_final[f'{select_box_unmatched_load_main}_MTCH'].unique()) ]) 
-        # labels1= ['Only one match','More than one match']
-
-        #    #len(df_final[f'{select_box_unmatched_load_main}_MTCH'].unique()) -> Only one match
-        #    #len(df_final)- len(df_final[f'{select_box_unmatched_load_main}_MTCH'].unique()) -> more than one match
-        # mycolors = [plot_blue_colour, primaryColor]
-        # explode = (0, 0)
-    
-        # #fig1, ax1 = plt.subplots()
-        # fig1, ax1 = plt.subplots(figsize=(6,6))
-        # fig1.patch.set_facecolor(backgroundColor)
-    
-        # ax1.pie(y1, autopct=lambda x: '{:.0f}'.format(x*y1.sum()/100), explode=explode, labels=None,
-        #     shadow=False, startangle=90, colors=mycolors, textprops={'color':"w",'fontsize': 14} ) 
-        # ax1.axis('equal')
-        # plt.title('Customer', color=textColor, y=1.1, fontsize=16)
-        # plt.legend(labels1, loc='lower left', bbox_to_anchor=(0.5, -0.08))
-        # #plt.figure(figsize=(10,10))
-
-        # buf1 = BytesIO()
-        # fig1.savefig(buf1, format="png")
-
-        # #y = np.array([unmtch_name_col.nunique(), len(unmtch_name_col) - unmtch_name_col.nunique()])
-        # #unmatched_matches = pd.DataFrame({"labels" : ['Only one match','More than one match'],"values":[len(df_final[f'{select_box_unmatched_load_main}_UNMTCH'].unique()), len(df_final)- len(df_final[f'{select_box_unmatched_load_main}_UNMTCH'].unique())]})
-        # y2=np.array([len(df_final[f'{select_box_unmatched_load_main}_UNMTCH'].unique()), len(df_final)- len(df_final[f'{select_box_unmatched_load_main}_UNMTCH'].unique())])
-        # labels2=['Only one match','More than one match']
-
-        #    #len(df_final[f'{select_box_unmatched_load_main}_UNMTCH'].unique()) -> Only one match
-        #    #len(df_final)- len(df_final[f'{select_box_unmatched_load_main}_UNMTCH'].unique()) -> more than one match
-        # mycolors = [plot_blue_colour, primaryColor]
-        # explode = (0, 0)
-    
-        # #fig2, ax2 = plt.subplots()
-        # fig2, ax2 = plt.subplots(figsize=(6,6))
-        # fig2.patch.set_facecolor(backgroundColor)
-    
-        # ax2.pie(y2, autopct=lambda x: '{:.0f}'.format(x*y2.sum()/100), explode=explode, labels=None,
-        #     shadow=False, startangle=90, colors=mycolors, textprops={'color':"w",'fontsize': 14}, radius=1800)
-        # ax2.axis('equal')
-        # plt.title('Unmatched', color=textColor, y=1.1, fontsize=16)
-        # plt.legend(labels2, loc='lower left', bbox_to_anchor=(0.5, -0.08))
-        # #plt.figure(figsize=(10,10))
-    
-        # buf2 = BytesIO()
-        # fig2.savefig(buf2, format="png")
+        buf1, buf2, buf3 = mini_pie_charts(df_final, st.session_state.value_select_box_unmatched_load_main, unmtch_name_col, ctomer_name_col )
 
         colp1.image(buf1)
         colp2.image(buf2)
@@ -654,35 +767,36 @@ if match_button and unmatched_file_valid_flag and customer_file_valid_flag:
         with colp3:
             st.write('')
 
-        st.header('Matched Summary Table​')
+        col7t.header('Matched Summary Table​')
         # algrtm_output_df
         # algrtm_output_df[]
         
-        if select_box_unmatched_load_11 and select_box_unmatched_load_12:
-            algrtm_output_df=algrtm_output_df[(algrtm_output_df[select_box_unmatched_load_11+'_CUST']==algrtm_output_df[select_box_unmatched_load_11+'_UNMTCH']) & (algrtm_output_df[select_box_unmatched_load_12+'_CUST']==algrtm_output_df[select_box_unmatched_load_12+'_UNMTCH'])]
-        elif select_box_unmatched_load_11 :
-            algrtm_output_df=algrtm_output_df[(algrtm_output_df[select_box_unmatched_load_11+'_CUST']==algrtm_output_df[select_box_unmatched_load_11+'_UNMTCH'])]
-        elif select_box_unmatched_load_12 :
-            algrtm_output_df=algrtm_output_df[(algrtm_output_df[select_box_unmatched_load_12+'_CUST']==algrtm_output_df[select_box_unmatched_load_12+'_UNMTCH'])]
+        if st.session_state.value_select_box_unmatched_load_11 and st.session_state.value_select_box_unmatched_load_12:
+            algrtm_output_df=algrtm_output_df[(algrtm_output_df[st.session_state.value_select_box_unmatched_load_11+'_CUST']==algrtm_output_df[st.session_state.value_select_box_unmatched_load_11+'_UNMTCH']) & (algrtm_output_df[st.session_state.value_select_box_unmatched_load_12+'_CUST']==algrtm_output_df[st.session_state.value_select_box_unmatched_load_12+'_UNMTCH'])]
+        elif st.session_state.value_select_box_unmatched_load_11 :
+            algrtm_output_df=algrtm_output_df[(algrtm_output_df[st.session_state.value_select_box_unmatched_load_11+'_CUST']==algrtm_output_df[st.session_state.value_select_box_unmatched_load_11+'_UNMTCH'])]
+        elif st.session_state.value_select_box_unmatched_load_12 :
+            algrtm_output_df=algrtm_output_df[(algrtm_output_df[st.session_state.value_select_box_unmatched_load_12+'_CUST']==algrtm_output_df[st.session_state.value_select_box_unmatched_load_12+'_UNMTCH'])]
     
 
         st.session_state.dataframe_csv = algrtm_output_df.copy()
-        st.dataframe(data=algrtm_output_df.head(100), use_container_width=True)
+        col7t.dataframe(data=algrtm_output_df.head(100), use_container_width=False)
+        
         
 
-        st.header('Store Performance​')
+        col7.header('Store Performance​')
 
         #----- Col 7 and Col 8--------
-        col7, col8 = st.columns([2, 2])
+        
         #store_table_title = '<p style="font-family:sans-serif;color:#30343F; font-size: 19px; text-align: left;">Store Statistics Table</p>'
         #col7.markdown(store_table_title, unsafe_allow_html=True)
         col7.write('Store Statistics Table')
         #violin_chart_title = '<p style="font-family:sans-serif;color:#30343F; font-size: 19px; text-align: left;">Store Statistics Distribution</p>'
         #col8.markdown(violin_chart_title, unsafe_allow_html=True)
-        col8.write("Store Statistics Distribution")
+        
 
-        df_gb_store_mtch['STORE'] = df_gb_store_mtch['STORE'].round(0).astype(str).str[:-2]
-        df_gb_store_mtch['STORE'] = df_gb_store_mtch['STORE'].replace('n', np.nan)
+        #df_gb_store_mtch['STORE'] = df_gb_store_mtch['STORE'].round(0).astype(str).str[:-2]
+        #df_gb_store_mtch['STORE'] = df_gb_store_mtch['STORE'].replace('n', np.nan)
 
         col7.dataframe(data=df_gb_store_mtch)
 
@@ -690,9 +804,15 @@ if match_button and unmatched_file_valid_flag and customer_file_valid_flag:
         # Violin plot
         ax_violin_plot= violin_graph(df_gb_store_mtch)
 
+        col8.write('')
+        col8.write('')
+        col8.write('')
+        col8.write('')
+        col8.write("Store Statistics Distribution")
         col8.pyplot(ax_violin_plot)
 
-
+        st.session_state.dc_valid_flag = True
+        st.session_state.check_data_flag = True
         
      # /....
     
@@ -706,21 +826,23 @@ else:
     col_space1.empty()
 
 
-if st.session_state['valid_flag']:
+
+
+if st.session_state['valid_flag'] and not dc_enhance or st.session_state.dc_valid_flag  :  #faltan valid flags ??
     #If both files are uploaded print stats of each one
     if  unmatched_file_valid_flag and customer_file_valid_flag:
         col_space1.success('Format Check Completed')    
         df_info = {'Number of rows':[len(st.session_state['unmatched_df_com_cols']), len(st.session_state.customer_df_com_cols)],
                     'Number of columns': [len(st.session_state['unmatched_df_com_cols'].columns), len(st.session_state.customer_df_com_cols.columns)]}
         df_info = pd.DataFrame(df_info).transpose().rename(columns={0:'Unmatch Data', 1:'Customer Data'})
-        #col_space1.dataframe(df_info)
+        col_space1.dataframe(df_info)
 
         ## NA charts
-        null_df_unmatched = st.session_state['unmatched_df_com_cols'].apply(lambda x: sum(x.isnull())).to_frame(name='count_null').reset_index()
+        null_df_unmatched = st.session_state.unmatched_df_com_cols.apply(lambda x: sum(x.isnull())).to_frame(name='count_null').reset_index()
         null_df_customers = st.session_state.customer_df_com_cols.apply(lambda x: sum(x.isnull())).to_frame(name='count_null').reset_index()
 
         #null_counts = df.isnull().sum()
-        notnull_df_unmatched = st.session_state['unmatched_df_com_cols'].apply(lambda x: sum(x.notnull())).to_frame(name='count').reset_index()
+        notnull_df_unmatched = st.session_state.unmatched_df_com_cols.apply(lambda x: sum(x.notnull())).to_frame(name='count').reset_index()
         notnull_df_customers = st.session_state.customer_df_com_cols.apply(lambda x: sum(x.notnull())).to_frame(name='count').reset_index()
 
         # create new DataFrame with counts
